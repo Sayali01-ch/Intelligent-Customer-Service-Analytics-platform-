@@ -101,15 +101,15 @@ All settings are in `config.py`:
 
 ### [ADVANCED] Advanced Features
 
-- 🔍 Batch document processing
+- [SEARCH] Batch document processing
 - [DASHBOARD] Real-time analytics dashboard
-- 📥 CSV/PDF export functionality
-- 💾 Session-based analysis history
-- 🎨 Professional UI with custom theming
-- ⚙️ Automatic sentiment categorization
-- 🏆 NPS-based customer segmentation
+- [EXPORT] CSV/PDF export functionality
+- [STORAGE] Session-based analysis history
+- [DESIGN] Professional UI with custom theming
+- [AUTO] Automatic sentiment categorization
+- [TROPHY] NPS-based customer segmentation
 
-### 🔐 Security Features
+### [SECURITY] Security Features
 
 [OK] Input validation and sanitization
 [OK] Secure file upload handling
