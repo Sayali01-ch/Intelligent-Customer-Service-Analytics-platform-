@@ -71,19 +71,19 @@ class SentimentAnalyzer:
         # Categorize sentiment
         if sentiment.polarity > 0.1:
             category = "Positive"
-            status = "Good"
+            emoji = "Good"
         elif sentiment.polarity < -0.1:
             category = "Negative"
-            status = "Bad"
+            emoji = "Bad"
         else:
             category = "Neutral"
-            status = "Neutral"
+            emoji = "Neutral"
         
         return {
             'polarity': sentiment.polarity,
             'subjectivity': sentiment.subjectivity,
             'category': category,
-            'status': status,
+            'emoji': emoji,
             'emotion': emotion,
             'nps_score': self._calculate_nps(sentiment.polarity)
         }
@@ -144,7 +144,7 @@ def main():
     
     # Sidebar
     with st.sidebar:
-        st.header("[CONFIG] Configuration")
+        st.header("[CONFIG] Configuration"))
         analysis_mode = st.radio(
             "Select Analysis Mode",
             ["Single Document", "Batch Analysis"],
@@ -158,7 +158,7 @@ def main():
         )
         
         st.divider()
-        st.header("[UPLOAD] Upload Document")
+        st.header("[UPLOAD] Upload Document"))
         uploaded_file = st.file_uploader(
             "Choose a file (TXT or PDF)",
             type=['txt', 'pdf'],
@@ -194,9 +194,7 @@ def main():
             if analysis:
                 # Display key metrics
                 st.divider()
-                st.subheader("[RESULTS] Sentiment Analysis Results")
-                
-                col1, col2, col3, col4 = st.columns(4)
+            st.subheader("[RESULTS] Sentiment Analysis Results")
                 
                 with col1:
                     st.metric(
@@ -213,6 +211,7 @@ def main():
                     )
                 
                 with col3:
+                    nps_color = "🟢" if analysis['nps_score'] > 50 else "🟡" if analysis['nps_score'] > 0 else "🔴"
                     st.metric(
                         "NPS Score",
                         f"{analysis['nps_score']:.0f}",
@@ -222,14 +221,14 @@ def main():
                 with col4:
                     st.metric(
                         "Sentiment",
-                        f"{analysis['status']} - {analysis['category']}"
+                        f"{analysis['emoji']} {analysis['category']}"
                     )
                 
                 # Detailed insights
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    st.subheader("[GAUGE] Sentiment Classification")
+                    st.subheader("🎯 Sentiment Classification")
                     fig = go.Figure(data=[go.Indicator(
                         mode="gauge+number",
                         value=analysis['polarity'] * 100,
@@ -253,7 +252,7 @@ def main():
                     st.plotly_chart(fig, use_container_width=True)
                 
                 with col2:
-                    st.subheader("[EMOTION] Emotion Detection")
+                    st.subheader("💭 Emotion Detection")
                     emotion_data = pd.DataFrame({
                         'Emotion': [analysis['emotion']],
                         'Confidence': ['High']
@@ -262,7 +261,7 @@ def main():
                     st.text(f"Detected Emotion: **{analysis['emotion']}**")
                 
                 # Keyword extraction
-                st.subheader("[KEYWORDS] Top Keywords")
+                st.subheader("🔑 Top Keywords")
                 keywords = analyzer.extract_keywords(text)
                 keywords_df = pd.DataFrame(keywords, columns=['Keyword', 'Frequency'])
                 
@@ -278,25 +277,25 @@ def main():
                 
                 # Industry-specific insights
                 st.divider()
-                st.subheader(f"[INDUSTRY] {industry} Industry Insights")
+                st.subheader(f"🏢 {industry} Industry Insights")
                 
                 insights = get_industry_insights(analysis, text, industry)
                 for insight in insights:
-                    st.info(f"[INFO] {insight}")
+                    st.info(f"💡 {insight}")
                 
                 # Recommendations
-                st.subheader("[RECOMMENDATIONS] Recommendations")
+                st.subheader("✅ Recommendations")
                 recommendations = get_recommendations(analysis, industry)
                 for i, rec in enumerate(recommendations, 1):
                     st.write(f"{i}. {rec}")
                 
                 # Export options
                 st.divider()
-                st.subheader("[EXPORT] Export Results")
+                st.subheader("📥 Export Results")
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    if st.button("[CSV] Export as CSV"):
+                    if st.button("📊 Export as CSV"):
                         export_df = pd.DataFrame({
                             'Metric': ['Polarity', 'Subjectivity', 'NPS Score', 'Sentiment', 'Emotion'],
                             'Value': [
@@ -311,7 +310,7 @@ def main():
                         st.download_button("Download CSV", csv, "analysis.csv", "text/csv")
                 
                 with col2:
-                    if st.button("[REPORT] Generate Report"):
+                    if st.button("📋 Generate Report"):
                         st.success("Report generation coming in v2.1")
                 
                 # Save to history
@@ -325,7 +324,7 @@ def main():
     else:
         # Empty state
         st.markdown("""
-        ### Welcome to Customer Service Analytics Platform
+        ### 👋 Welcome to Customer Service Analytics Platform
         
         **Get started:**
         1. Upload a document (TXT or PDF) from the sidebar
@@ -333,12 +332,12 @@ def main():
         3. Get industry-specific insights
         4. Export your results
         
-        ### Key Features
-        - [CHART] Advanced sentiment analysis
-        - [EMOTION] Emotion detection
-        - [KEYWORDS] Keyword extraction
-        - [BRIEFCASE] Industry insights
-        - [CHART] NPS scoring
+        ### 🎯 Key Features
+        - 📊 Advanced sentiment analysis
+        - 🎭 Emotion detection
+        - 🔑 Keyword extraction
+        - 💼 Industry insights
+        - 📈 NPS scoring
         """)
 
 def get_industry_insights(analysis, text, industry):
@@ -381,7 +380,7 @@ def get_industry_insights(analysis, text, industry):
             insights.append("Strong emotional content indicates significant patient concerns.")
     
     if analysis['emotion'] == "Angry":
-        insights.append("[URGENT] HIGH PRIORITY: Address customer concerns urgently to prevent escalation.")
+        insights.append("⚠️ HIGH PRIORITY: Address customer concerns urgently to prevent escalation.")
     
     if analysis['polarity'] > 0.7:
         insights.append("This is a promoter account - leverage for testimonials and referrals.")
