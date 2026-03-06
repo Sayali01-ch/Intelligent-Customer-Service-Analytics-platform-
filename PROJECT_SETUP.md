@@ -74,7 +74,7 @@ pip install pytest
 pytest tests.py -v
 ```
 
-### 📊 Key Metrics & Analytics
+### [METRICS] Key Metrics & Analytics
 
 - **Sentiment Scores**: Polarity (-1 to +1), Subjectivity (0 to 1)
 - **NPS Scoring**: 0-100 scale with customer segmentation
@@ -82,7 +82,7 @@ pytest tests.py -v
 - **Text Statistics**: Word count, sentence count, unique words
 - **Keyword Analysis**: Top 15 keywords with frequency counts
 
-### 🔧 Configuration
+### [CONFIG] Configuration
 
 All settings are in `config.py`:
 - File upload limits (50MB)
@@ -91,7 +91,7 @@ All settings are in `config.py`:
 - Sentiment thresholds
 - Performance settings
 
-### 🚀 Deployment Options
+### [DEPLOY] Deployment Options
 
 1. **Streamlit Cloud**: Push to GitHub, auto-deploy
 2. **Docker**: `docker build -t app . && docker run -p 8501:8501 app`
@@ -99,10 +99,10 @@ All settings are in `config.py`:
 4. **AWS/GCP**: Use provided Docker image
 5. **Self-hosted**: Follow DEPLOYMENT.md guide
 
-### 📈 Advanced Features
+### [ADVANCED] Advanced Features
 
 - 🔍 Batch document processing
-- 📊 Real-time analytics dashboard
+- [DASHBOARD] Real-time analytics dashboard
 - 📥 CSV/PDF export functionality
 - 💾 Session-based analysis history
 - 🎨 Professional UI with custom theming
@@ -111,12 +111,12 @@ All settings are in `config.py`:
 
 ### 🔐 Security Features
 
-✅ Input validation and sanitization
-✅ Secure file upload handling
-✅ Environment variable protection
-✅ Rate limiting ready
-✅ Error details hidden in production
-✅ CORS support
+[OK] Input validation and sanitization
+[OK] Secure file upload handling
+[OK] Environment variable protection
+[OK] Rate limiting ready
+[OK] Error details hidden in production
+[OK] CORS support
 
 ### [DEPENDENCIES] Dependencies
 
