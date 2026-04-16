@@ -13,6 +13,12 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import Counter
 import nltk
 from nltk.corpus import stopwords
+import json
+
+# Database imports
+from database import get_db, SessionLocal
+from models import User, Analysis, Insight
+from analytics import AdvancedAnalytics
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -147,6 +153,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Session state initialization
+if 'user' not in st.session_state:
+    st.session_state.user = None
 if 'analysis_history' not in st.session_state:
     st.session_state.analysis_history = []
 
@@ -248,21 +256,87 @@ def main():
     
     # Sidebar
     with st.sidebar:
-        st.markdown("<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;'><h2 style='margin: 0;'>CONFIGURATION</h2></div>", unsafe_allow_html=True)
-        
+        st.markdown("<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;'><h2 style='margin: 0;'>PLATFORM</h2></div>", unsafe_allow_html=True)
+
+        # Authentication section
+        if st.session_state.user:
+            st.markdown(f"**Logged in as:** {st.session_state.user.username}")
+            if st.button("Logout"):
+                st.session_state.user = None
+                st.session_state.analysis_history = []
+                st.rerun()
+        else:
+            st.markdown("### Authentication")
+            auth_mode = st.radio("Mode", ["Login", "Register"], key="auth_mode")
+
+            if auth_mode == "Login":
+                with st.form("login_form"):
+                    username = st.text_input("Username")
+                    password = st.text_input("Password", type="password")
+                    submitted = st.form_submit_button("Login")
+
+                    if submitted:
+                        # Simple authentication (in production, use proper auth)
+                        db = SessionLocal()
+                        try:
+                            user = db.query(User).filter(User.username == username).first()
+                            if user and user.hashed_password == password:  # Simplified for demo
+                                st.session_state.user = user
+                                st.success("Logged in successfully!")
+                                st.rerun()
+                            else:
+                                st.error("Invalid credentials")
+                        finally:
+                            db.close()
+
+            else:  # Register
+                with st.form("register_form"):
+                    email = st.text_input("Email")
+                    username = st.text_input("Username")
+                    password = st.text_input("Password", type="password")
+                    full_name = st.text_input("Full Name")
+                    submitted = st.form_submit_button("Register")
+
+                    if submitted:
+                        db = SessionLocal()
+                        try:
+                            # Check if user exists
+                            existing = db.query(User).filter(
+                                (User.username == username) | (User.email == email)
+                            ).first()
+
+                            if existing:
+                                st.error("Username or email already exists")
+                            else:
+                                # Create user (simplified - no password hashing for demo)
+                                new_user = User(
+                                    email=email,
+                                    username=username,
+                                    hashed_password=password,  # In production, hash this
+                                    full_name=full_name
+                                )
+                                db.add(new_user)
+                                db.commit()
+                                st.success("Account created! Please login.")
+                        finally:
+                            db.close()
+
+        st.divider()
+        st.markdown("<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;'><h3 style='margin: 0;'>ANALYSIS CONFIG</h3></div>", unsafe_allow_html=True)
+
         st.markdown("")
         analysis_mode = st.radio(
             "Analysis Mode",
             ["Single Document", "Batch Analysis"],
             help="Choose your analysis mode"
         )
-        
+
         industry = st.selectbox(
             "Select Industry",
             ["E-Commerce", "SaaS", "Hospitality", "Healthcare", "General"],
             help="Industry context for insights"
         )
-        
+
         st.divider()
         st.markdown("<div style='background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 15px; border-radius: 10px; text-align: center;'><h3 style='margin: 0;'>UPLOAD FILE</h3></div>", unsafe_allow_html=True)
         st.markdown("")
@@ -436,12 +510,54 @@ def main():
                         st.success("Report generation coming in v2.1")
                 
                 # Save to history
-                st.session_state.analysis_history.append({
-                    'timestamp': datetime.now(),
-                    'file': uploaded_file.name,
-                    'sentiment': analysis['category'],
-                    'polarity': analysis['polarity']
-                })
+                if st.session_state.user:
+                    # Save to database
+                    db = SessionLocal()
+                    try:
+                        keywords_json = json.dumps([kw for kw, _ in keywords])
+
+                        db_analysis = Analysis(
+                            user_id=st.session_state.user.id,
+                            filename=uploaded_file.name,
+                            file_content=text[:10000],  # Store first 10k chars
+                            polarity=analysis['polarity'],
+                            subjectivity=analysis['subjectivity'],
+                            sentiment_category=analysis['category'],
+                            emotion=analysis.get('emotion', 'Neutral'),
+                            nps_score=analysis['nps_score'],
+                            industry=industry,
+                            keywords=keywords_json
+                        )
+
+                        db.add(db_analysis)
+                        db.commit()
+                        db.refresh(db_analysis)
+
+                        # Save insights
+                        for insight in insights:
+                            db_insight = Insight(
+                                analysis_id=db_analysis.id,
+                                insight_type="industry",
+                                content=insight,
+                                priority="medium"
+                            )
+                            db.add(db_insight)
+
+                        db.commit()
+                        st.success("Analysis saved to database!")
+                    except Exception as e:
+                        logger.error(f"Database save error: {str(e)}")
+                        st.error("Failed to save to database")
+                    finally:
+                        db.close()
+                else:
+                    # Fallback to session state
+                    st.session_state.analysis_history.append({
+                        'timestamp': datetime.now(),
+                        'file': uploaded_file.name,
+                        'sentiment': analysis['category'],
+                        'polarity': analysis['polarity']
+                    })
     
     else:
         # Empty state with attractive welcome

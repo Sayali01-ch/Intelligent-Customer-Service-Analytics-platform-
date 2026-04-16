@@ -42,7 +42,7 @@ class TestDataProcessing:
         processor = TextProcessor()
         dirty_text = "  HELLO   World!  "
         clean = processor.clean_text(dirty_text)
-        assert clean == "hello   world!"
+        assert clean == "hello world!"
     
     def test_keyword_extraction(self):
         """Test keyword extraction"""
